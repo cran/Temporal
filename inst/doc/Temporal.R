@@ -1,115 +1,103 @@
-## ----global_options, include=FALSE---------------------------------------
+## ----global_options, include=FALSE--------------------------------------------
 knitr::opts_chunk$set(echo=T,cache=T,results='hold');
 library(Temporal);
-set.seed(101);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Generate exponential time to event data
-D = rWeibull(n=1e3,a=1,l=2,p=0.2);
+data = genData(n=1e3,dist="exp",theta=c(2),p=0.2)
 # Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="exp");
-show(M);
+fit= fitParaSurv(time=data$time,status=data$status,dist="exp");
+show(fit);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Generate gamma time to event data
-D = rGamma(n=1e3,a=2,l=2,p=0.2);
+data = genData(n=1e3,dist="gamma",theta=c(2,2),p=0.25);
 # Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="gamma");
-show(M);
+fit = fitParaSurv(time=data$time,status=data$status,dist="gamma",tau=0.5);
+show(fit);
 
-## ------------------------------------------------------------------------
-set.seed(100);
+## -----------------------------------------------------------------------------
+set.seed(102);
 # Generate generalized gamma time to event data
-D = rGenGamma(n=1e4,a=2,b=2,l=2,p=0.2);
+data = genData(n=1e4,dist="gen-gamma",theta=c(2,2,2),p=0.1);
 # Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="gengamma",report=T);
-show(M);
+fit = fitParaSurv(time=data$time,status=data$status,dist="gen-gamma",report=T);
+show(fit);
 
-## ---- results='markup'---------------------------------------------------
-set.seed(103);
-# Generate generalized gamma time to event data
-D = rGenGamma(n=1e3,a=2,b=2,l=2,p=0.2);
-# Estimate parameters
-fitParaSurv(time=D$time,status=D$status,dist="gengamma",report=T);
-# Initialization
-init0 = list("la"=log(2),"lb"=log(2),"ll"=log(2));
-fitParaSurv(time=D$time,status=D$status,dist="gengamma",init=init0,report=T);
+## ---- results='markup', eval=FALSE--------------------------------------------
+#  # Initialization
+#  fitParaSurv(time=data$time,status=data$status,dist="gen-gamma",init=c(2,2,2));
 
-## ------------------------------------------------------------------------
-# Generate log-logistic time to event data
-D = rLogLogistic(n=1e3,a=4,l=2,p=0.2);
-# Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="log-logistic");
-show(M);
-
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Generate log-normal time to event data
-D = rLogNormal(n=1e3,m=1,s=2,p=0.2)
+data = genData(n=1e3,dist="log-normal",theta=c(1,2),p=0.15);
 # Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="log-normal");
-show(M);
+fit = fitParaSurv(time=data$time,status=data$status,dist="log-normal",tau=c(5,10,25));
+show(fit);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Generate Weibull time to event data
-D = rWeibull(n=1e3,a=2,l=2,p=0.2);
+data = genData(n=1e3,dist="weibull",theta=c(2,2),p=0.3);
 # Estimate parameters
-M = fitParaSurv(time=D$time,status=D$status,dist="weibull");
-show(M);
+fit = fitParaSurv(time=data$time,status=data$status,dist="weibull");
+show(fit);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+set.seed(101);
 # Target group
-D1 = rGamma(n=1e2,a=2,l=2,p=0.2);
-D1$arm = 1;
+d1 = genData(n=1e3,dist="gamma",theta=c(2,1),p=0.25);
+d1$arm = 1;
 # Reference group 
-D0 = rGamma(n=1e2,a=2,l=4,p=0.2);
-D0$arm = 0;
+d0 = genData(n=1e3,dist="gamma",theta=c(2,2),p=0.15);
+d0$arm = 0;
 # Overall data 
-D = rbind(D1,D0);
+data = rbind(d1,d0);
 # Comparison
-E = compParaSurv(time=D$time,status=D$status,arm=D$arm,dist1="gamma",dist0="gamma");
+comp = compParaSurv(time=data$time,status=data$status,arm=data$arm,dist1="gamma",dist0="gamma");
 cat("\n");
-show(E);
+show(comp);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Target group
-D1 = rWeibull(n=1e2,a=2,l=2,p=0.5);
-D1$arm = 1;
+d1 =genData(n=1e3,dist="weibull",theta=c(2,2),p=0.5);
+d1$arm = 1;
 # Reference group
-D0 = rWeibull(n=1e2,a=2,l=2,p=0.0);
-D0$arm = 0;
+d0 = genData(n=1e3,dist="weibull",theta=c(2,2),p=0.0);
+d0$arm = 0;
 # Overall data
-D = rbind(D1,D0);
+data = rbind(d1,d0);
 # Comparison
-E = compParaSurv(time=D$time,status=D$status,arm=D$arm,dist1="weibull",dist0="weibull");
+comp = compParaSurv(time=data$time,status=data$status,arm=data$arm,dist1="weibull",dist0="weibull",boot=1e3);
 cat("\n");
-show(E);
+show(comp);
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+set.seed(105);
 # Target group
-D1 = rLogLogistic(n=1e2,a=4,l=pi/(2*sqrt(2)),p=0.2);
-D1$arm = 1;
+d1 = genData(n=1e3,dist="log-normal",theta=c(0,sqrt(2*log(2))),p=0.1);
+d1$arm = 1;
 # Reference group
-D0 = rGamma(n=1e2,a=(1/2),l=(1/2),p=0.2);
-D0$arm = 0;
+d0 = genData(n=1e3,dist="weibull",theta=c(2,sqrt(log(2))),p=0.1);
+d0$arm = 0;
 # Overall data
-D = rbind(D1,D0);
+data = rbind(d1,d0);
 # Comparison
-E = compParaSurv(time=D$time,status=D$status,arm=D$arm,dist1="log-logistic",dist0="gamma");
+comp = compParaSurv(time=data$time,status=data$status,arm=data$arm,dist1="log-normal",dist0="weibull",perm=1e3);
 cat("\n");
-show(E);
+show(comp);
 
-## ------------------------------------------------------------------------
-set.seed(100);
+## -----------------------------------------------------------------------------
+set.seed(106);
 # Target group
-D1 = rLogNormal(n=1e2,m=0,s=sqrt(2*log(2)),p=0.2);
-D1$arm = 1;
+d1 = genData(n=1e3,dist="gamma",theta=c(4,4),p=0.2);
+d1$arm = 1;
 # Reference group
-D0 = rWeibull(n=1e2,a=1,l=1,p=0.2);
-D0$arm = 0;
+d0 = genData(n=1e3,dist="exp",theta=c(1),p=0.2);
+d0$arm = 0;
 # Overall data
-D = rbind(D1,D0);
+data = rbind(d1,d0);
 # Comparison
-E = compParaSurv(time=D$time,status=D$status,arm=D$arm,dist1="log-normal",dist0="exp");
+comp = compParaSurv(time=data$time,status=data$status,arm=data$arm,dist1="gamma",dist0="exp",tau=c(0.5,1.0,1.5),perm=1e3);
 cat("\n");
-show(E);
+show(comp);
 
