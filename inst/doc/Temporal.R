@@ -28,7 +28,7 @@ data <- GenData(n = 1e4, dist = "gen-gamma", theta = c(2, 2, 2), p = 0.1)
 fit <- FitParaSurv(data, dist = "gen-gamma", report = TRUE)
 show(fit)
 
-## ---- results='markup', eval=FALSE--------------------------------------------
+## ----results='markup', eval=FALSE---------------------------------------------
 #  # Initialization.
 #  fit <- FitParaSurv(
 #    data,
